@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.4"
+         xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+<!--程序启动默认打开的页面-->
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+  <!--必须要在web.xml这个web应用程序的核心配置文件里面引用所需要的其他xml或者配置文件，这样web应用程序才可以使用它。我们现在所使用的是S(spring业务层)S(spring-mvc(表示层))M(mybatis(dao数据访问层))整合矿建
+  ，所以我们需要把配置文件都引用进来，mybaits的文件已经在spring-mybtatis的整合中全部放在了application,xml中了，所以还要配置表示层的spring-mvc.xml.然后一起在web.xml中引用并且加载进去-->
+
+
+  <!--如果下面的文件放在resource里面就要这样引用进来-，如果放在webInfo下面，因为本来就在web程序可以自动引用到，所以在webInfo下面就无需引用-->
+  <context-param>
+  <param-name>contextConfigLocation</param-name>
+  <param-value>classpath:applicationContext.xml</param-value>
+  </context-param>
+
+  <!-- 加载配置Spring       相当于加载application的配置进来（因为application.xml一般属于配置spring的文件）-->
+  <!-- 当系统启动的时候，spring需要进行一些资源加载或者配置，都需要使用此监听去做 -->
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+
+  <!--解决中文乱码-->
+  <filter>
+    <filter-name>characterEncodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+    <init-param>
+      <param-name>forceEncoding</param-name>
+      <param-value>true</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>characterEncodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!--加载配置springMVC，因为sping-mvc主要是做表示层和controller控制的，所以在引用和配置加载spring-mvc在servlet的标签中进行。-->
+  <servlet>
+    <servlet-name>springmvc</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+
+    <!--如果下面的文件放在resource里面就要这样加载进来，但是如果直接放在webInfo下面的就无需做这一步的引进操作-->
+    <init-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:springmvc-servlet.xml</param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>springmvc</servlet-name>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+
+</web-app>
+        

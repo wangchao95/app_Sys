@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:p="http://www.springframework.org/schema/p"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+    http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.1.xsd
+    http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+    http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-3.1.xsd"
+        default-autowire="byName"  >
+
+    <!--引入database.properties发文件-->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:db.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--定义加载数据源-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="url" value="${db_url}" />
+        <property name="driverClassName" value="${db_driver}"/>
+        <property name="username" value="${db_name}"/>
+        <property name="password" value="${db_pwd}"/>
+        <property name="maxActive" value="${maxActive}"/>
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="${maxConnSize}"/>
+    </bean>
+
+<!--（可以自动为我们创建会话（链接数据库））定义sqlSessionFactoryBean工厂bean创建sqlsession会话，和引入数据源，定义sql语句返回的类型的别名，加载引入xml映射文件-->
+    <bean id="factoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="typeAliasesPackage" value="cn.appsys.pojo"/>
+        <property name="mapperLocations" value="classpath:xml/*.xml"/>
+    </bean>
+
+    <!--引入声明式事务管理类-->
+    <bean name="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"/>
+    <!--配置事务-->
+    <tx:advice id="txAdvice">
+        <tx:attributes>
+            <tx:method name="add*"/>
+            <tx:method name="query*" propagation="NOT_SUPPORTED"/>
+            <tx:method name="update*"/>
+            <tx:method name="del*"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!--在切面增强配置中引入上面声明的事务-->
+    <aop:config>
+        <aop:pointcut id="pointCut" expression="execution(* cn.appsys.service..*.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pointCut"/>
+    </aop:config>
+
+    <!--自动为dao的接口指定映射的dao实现类-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="cn.appsys.dao"/>
+        <!--配置会话-->
+        <property name="sqlSessionFactoryBeanName" value="factoryBean"/>
+    </bean>
+
+</beans>

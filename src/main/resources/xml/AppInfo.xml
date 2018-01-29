@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.appsys.dao.AppInfoDao">
+    <sql id="commonSql">
+        <if test="appInfo.softwareName!=null and appInfo.softwareName!=''">
+            and softwareName like concat('%',#{appInfo.softwareName},'%')
+        </if>
+        <if test="appInfo.status>0">and status=#{appInfo.status}</if>
+        <if test="appInfo.categoryLevel1>0">and categoryLevel1=#{appInfo.categoryLevel1}</if>
+        <if test="appInfo.categoryLevel2>0">and categoryLevel2=#{appInfo.categoryLevel2}</if>
+        <if test="appInfo.categoryLevel3>0">and categoryLevel3=#{appInfo.categoryLevel3}</if>
+        <if test="appInfo.flatformId>0">and flatformId=#{appInfo.flatformId}</if>
+    </sql>
+    
+    <sql id="commInfo">
+          select a.id,a.softwareName,a.APKName,a.supportROM,a.softwareSize,v.versionSize,a.interfaceLanguage,v.apkFileName,v.modifyDate,a.devId,v.id vid,
+        (select devName from dev_user where id = a.devId) as devName,
+        a.status,
+        (select valueName from data_dictionary d where  a.status=d.valueId AND d.typeCode='APP_STATUS') as statusName,
+        a.flatformId,
+        (select valueName from data_dictionary d where  a.flatformId=d.valueId AND d.typeCode='APP_FLATFORM') as flatformName,
+        a.categoryLevel1,
+        (select categoryName from app_category c where  c.id=a.categoryLevel1) as categoryLevel1Name,
+        a.categoryLevel2,
+        (select categoryName from app_category c where  c.id=a.categoryLevel2) as categoryLevel2Name,
+        a.categoryLevel3,
+        (select categoryName from app_category c where  c.id=a.categoryLevel3) as categoryLevel3Name,
+         v.publishStatus,
+        (SELECT valueName FROM data_dictionary d WHERE  v.publishStatus=d.valueId AND d.typeCode='PUBLISH_STATUS') AS publishName,
+        a.downloads,
+        a.onSaleDate,
+        a.logoPicPath,
+        v.downloadLink,
+        a.appInfo,
+        v.versionInfo,
+        v.versionNo,
+        a.versionId,
+        (select v.versionNo from app_version v where v.id=a.versionId ) as versionNo
+        from  app_info a
+    </sql>
+
+    <select id="findAppInfoByParam" resultType="AppInfo">
+        select a.id, a.softwareName,a.APKName,a.supportROM,a.softwareSize,a.devId,
+        (select devName from dev_user where id = a.devId) as devName,
+        a.status,
+        (select valueName from data_dictionary d where  a.status=d.valueId AND d.typeCode='APP_STATUS') as statusName,
+        a.flatformId,
+        (select valueName from data_dictionary d where  a.flatformId=d.valueId AND d.typeCode='APP_FLATFORM') as flatformName,
+        a.categoryLevel1,
+        (select categoryName from app_category c where  c.id=a.categoryLevel1) as categoryLevel1Name,
+        a.categoryLevel2,
+        (select categoryName from app_category c where  c.id=a.categoryLevel2) as categoryLevel2Name,
+        a.categoryLevel3,
+        (select categoryName from app_category c where  c.id=a.categoryLevel3) as categoryLevel3Name,
+        a.downloads,
+        a.onSaleDate,
+        a.versionId,
+        (select v.versionNo from app_version v where v.id=a.versionId ) as versionNo
+        from  app_info a
+        <where>
+            <include refid="commonSql"/>
+        </where>
+        order by a.creationDate desc limit #{limitFirst},#{pageSize}
+    </select>
+
+    <select id="findAppInfoCountByParam" resultType="_int">
+        select count(*) from app_info
+        <where>
+            <include refid="commonSql"/>
+        </where>
+    </select>
+
+    <insert id="addAppInfo">
+        INSERT INTO `app_info`(`softwareName`,`APKName`,`supportROM`,`interfaceLanguage`,`softwareSize`,`devId`,`appInfo`,`status`,`flatformId`,`categoryLevel3`,`downloads`,`createdBy`,`creationDate`,`categoryLevel1`,`categoryLevel2`,`logoPicPath`,`logoLocPath`)VALUES(
+        #{softwareName},#{APKName},#{supportROM},#{interfaceLanguage},#{softwareSize},#{devId},#{appInfo},#{status},#{flatformId},#{categoryLevel3},#{downloads},#{createdBy},#{creationDate},#{categoryLevel1},#{categoryLevel2},#{logoPicPath},#{logoLocPath}
+        )
+    </insert>
+
+    <select id="getAppByApkName" resultType="_int">
+        select count(*) from app_info
+        <where>
+            <if test="APKName!=null and APKName!=''">and APKName=#{APKName}</if>
+            <if test="id>0">and id=#{id}</if>
+        </where>
+    </select>
+
+    <update id="updateAppInfo">
+        UPDATE `app_info`
+        <set>
+            <if test="versionId>0">versionId=#{versionId},</if>
+            <if test="softwareName!=null and softwareName!=''">softwareName=#{softwareName},</if>
+            <if test="APKName!=null and APKName!=''">APKName=#{APKName},</if>
+            <if test="supportROM!=null and supportROM!=''">supportROM=#{supportROM},</if>
+            <if test="interfaceLanguage!=null and interfaceLanguage!=''">interfaceLanguage=#{interfaceLanguage},</if>
+            <if test="softwareSize>0">softwareSize=#{softwareSize},</if>
+            <if test="updateDate!=null">updateDate=#{updateDate},</if>
+            <if test="devId>0">devId=#{devId},</if>
+            <if test="appInfo!=null and appInfo!=''">appInfo=#{appInfo},</if>
+            <if test="status>0">status=#{status},</if>
+            <if test="onSaleDate!=null">onSaleDate=#{onSaleDate},</if>
+            <if test="offSaleDate!=null">offSaleDate=#{offSaleDate},</if>
+            <if test="flatformId>0">flatformId=#{flatformId},</if>
+            <if test="categoryLevel3>0">categoryLevel3=#{categoryLevel3},</if>
+            <if test="downloads!=null and downloads!=''">downloads=#{downloads},</if>
+            <if test="modifyBy>0">modifyBy=#{modifyBy},</if>
+            <if test="modifyDate!=null">modifyDate=#{modifyDate},</if>
+            <if test="categoryLevel1>0">categoryLevel1=#{categoryLevel1},</if>
+            <if test="categoryLevel2>0">categoryLevel2=#{categoryLevel2},</if>
+            <if test="logoPicPath!=null and logoPicPath!=''">logoPicPath=#{logoPicPath},</if>
+            <if test="logoLocPath!=null and logoLocPath!=''">logoLocPath=#{logoLocPath},</if>
+        </set>
+        where id=#{id}
+    </update>
+
+
+    <select id="getAppInfoByParam" resultMap="appInfoList">
+        <include refid="commInfo"/>  LEFT OUTER JOIN app_version v  ON a.id=v.appId
+        <where>
+            <if test="id>0">and a.id=#{id}</if>
+        </where>
+    </select>
+
+    <resultMap id="appInfoList" type="AppInfo">
+        <result property="id" column="id"/>
+        <result property="softwareName" column="softwareName"/>
+        <result property="APKName" column="APKName"/>
+        <result property="supportROM" column="supportROM"/>
+        <result property="interfaceLanguage" column="interfaceLanguage"/>
+        <result property="softwareSize" column="softwareSize"/>
+        <result property="downloads" column="downloads"/>
+        <result property="flatformName" column="flatformName"/>
+        <result property="flatformId" column="flatformId"/>
+        <result property="categoryLevel1" column="categoryLevel1"/>
+        <result property="categoryLevel2" column="categoryLevel2"/>
+        <result property="categoryLevel3" column="categoryLevel3"/>
+        <result property="status" column="status"/>
+        <!--el表达式的对象.属性值   的属性是   实体类的属性-->
+        <result property="categoryLevel1Name" column="categoryLevel1Name"/>
+        <result property="categoryLevel2Name" column="categoryLevel2Name"/>
+        <result property="categoryLevel3Name" column="categoryLevel3Name"/>
+        <result property="statusName" column="statusName"/>
+        <result property="appInfo" column="appInfo"/>
+        <result property="logoPicPath" column="logoPicPath"/>
+        <result property="versionId" column="versionId"/>
+        <collection property="appVersion" ofType="AppVersion" resultMap="appVersionList"/>
+    </resultMap>
+
+    <resultMap id="appVersionList" type="AppVersion">
+        <result property="id" column="vid"/>
+        <result property="versionNo" column="versionNo"/>
+        <result property="versionSize" column="versionSize"/>
+        <result property="publishStatusName" column="publishName"/>
+        <result property="apkFileName" column="apkFileName"/>
+        <result property="downloadLink" column="downloadLink"/>
+        <result property="versionInfo" column="versionInfo"/>
+        <result property="modifyDate" column="modifyDate"/>
+    </resultMap>
+
+    <delete id="delAppInfo">
+        delete from app_info
+        <where>
+            <if test="id>0">and id=#{id}</if>
+        </where>
+    </delete>
+
+</mapper>

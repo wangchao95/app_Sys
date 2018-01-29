@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.appsys.dao.DevUserDao">
+
+    <select id="getDevUser" resultType="DevUser">
+        SELECT * FROM `dev_user`where  devCode=#{devCode} and devPassword=#{devPassword}
+    </select>
+
+    <update id="updateUser">
+        update dev_user
+        <set>
+            <if test="devCode!=null and devCode!=''">devCode=#{devCode},</if>
+            <if test="devName!=null and devName!=''">devName=#{devName},</if>
+            <if test="devPassword!=null and devPassword!=''">devPassword=#{devPassword},</if>
+            <if test="devEmail!=null and devEmail!=''">devEmail=#{devEmail},</if>
+            <if test="devInfo!=null and devInfo!=''">devInfo=#{devInfo},</if>
+            <if test="modifyBy>0">modifyBy=#{modifyBy},</if>
+            <if test="modifyDate!=null">modifyDate=#{modifyDate},</if>
+        </set>
+        <where>
+            <if test="id>0">and id=#{id}</if>
+        </where>
+    </update>
+
+    <select id="findDevUser" resultType="DevUser">
+        SELECT * FROM `dev_user`
+        <where>
+            <if test="devUser.devCode!=null and devUser.devCode!=''">and devCode=#{devUser.devCode}</if>
+            <if test="devUser.devName!=null and devUser.devName!=''">and devName=#{devUser.devName}</if>
+            <if test="devUser.devEmail!=null and devUser.devEmail!=''">and devEmail=#{devUser.devEmail}</if>
+        </where>
+    </select>
+
+    <insert id="addDevUser">
+      INSERT INTO dev_user(`devCode`,`devName`,`devPassword`,`devEmail`,`devInfo`,`createdBy`,`creationDate`) VALUES(#{devCode},#{devName},
+        #{devPassword},#{devEmail},#{devInfo},#{createdBy},#{creationDate});
+    </insert>
+
+</mapper>
