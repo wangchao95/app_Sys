@@ -43,7 +43,7 @@ public class DevLoginController {
     }
 
     /**
-     * 退出
+     * 退出系统
      * @return
      */
     @RequestMapping("/loginOut.html")
